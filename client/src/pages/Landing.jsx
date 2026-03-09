@@ -6,7 +6,7 @@ export default function Landing() {
 
   const pingBackend = async () => {
   try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/health`);
+   const res = await fetch("https://ai-interviewer-app-pfe6.onrender.com/api/health");
     const data = await res.json();
     setBackendMsg(data.message || "Backend working perfectly 🚀");
   } catch (err) {
