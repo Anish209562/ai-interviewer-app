@@ -14,7 +14,16 @@ const app = express();
 // =============================
 // ✅ Middleware
 // =============================
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      'http://localhost:5173',
+      'https://ai-interviewer-app-nu.vercel.app',
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // =============================
