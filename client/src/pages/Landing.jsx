@@ -5,14 +5,14 @@ export default function Landing() {
   const [backendMsg, setBackendMsg] = useState("");
 
   const pingBackend = async () => {
-    try {
-      const res = await fetch("http://localhost:5050/api/health");
-      const data = await res.json();
-      setBackendMsg(data.message || "Backend OK ✅");
-    } catch (err) {
-      setBackendMsg("❌ Backend not reachable / CORS issue");
-    }
-  };
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/health`);
+    const data = await res.json();
+    setBackendMsg(data.message || "Backend working perfectly 🚀");
+  } catch (err) {
+    setBackendMsg("❌ Backend not reachable / CORS issue");
+  }
+};
     return (
         <div className="flex-grow flex flex-col items-center justify-center p-6 lg:p-12 relative overflow-hidden">
             {/* Background decoration */}
