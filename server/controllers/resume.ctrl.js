@@ -1,4 +1,4 @@
-import { analyzeResume } from '../services/gemini.js';
+import { analyzeResume } from '../services/groq.js';
 
 export const analyzeUserResume = async (req, res) => {
     try {
@@ -11,6 +11,6 @@ export const analyzeUserResume = async (req, res) => {
         res.json(analysis);
     } catch (error) {
         console.error('Error analyzing resume:', error);
-        res.status(500).json({ error: 'Failed to analyze resume' });
+        res.status(error.statusCode || 500).json({ error: error.message || 'Failed to analyze resume' });
     }
 };

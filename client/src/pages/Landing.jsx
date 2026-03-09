@@ -1,15 +1,17 @@
 import { Link } from 'react-router-dom';
 import { Bot, Target, Zap, Trophy, ArrowRight } from 'lucide-react';
 import { useState } from "react";
+import { API_BASE_URL } from '../services/api';
+
 export default function Landing() {
   const [backendMsg, setBackendMsg] = useState("");
 
   const pingBackend = async () => {
   try {
-   const res = await fetch("https://ai-interviewer-app-pfe6.onrender.com/api/health");
+   const res = await fetch(`${API_BASE_URL}/health`);
     const data = await res.json();
     setBackendMsg(data.message || "Backend working perfectly 🚀");
-  } catch (err) {
+  } catch {
     setBackendMsg("❌ Backend not reachable / CORS issue");
   }
 };
@@ -22,7 +24,7 @@ export default function Landing() {
             <div className="max-w-4xl w-full text-center space-y-8 relative z-10">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-sm font-medium mb-4">
                     <Bot size={16} />
-                    <span>Powered by Google Gemini AI</span>
+                    <span>Powered by Groq AI</span>
                 </div>
 
                 <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight">

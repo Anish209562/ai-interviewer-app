@@ -69,7 +69,7 @@ export default function ResumeAnalyzer() {
                     {loading && (
                         <div className="h-full flex flex-col items-center justify-center text-indigo-400 space-y-4">
                             <Loader2 size={48} className="animate-spin" />
-                            <p className="animate-pulse font-medium">Extracting data via Gemini...</p>
+                            <p className="animate-pulse font-medium">Extracting data via Groq...</p>
                         </div>
                     )}
 

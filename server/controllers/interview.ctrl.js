@@ -1,5 +1,5 @@
 import InterviewSession from '../models/InterviewSession.js';
-import { generateInterviewQuestions, evaluateAnswer } from '../services/gemini.js';
+import { generateInterviewQuestions, evaluateAnswer } from '../services/groq.js';
 import { v4 as uuidv4 } from 'uuid';
 
 export const startInterview = async (req, res) => {
@@ -27,7 +27,7 @@ export const startInterview = async (req, res) => {
         res.status(201).json(session);
     } catch (error) {
         console.error('Error starting interview:', error);
-        res.status(500).json({ error: 'Failed to start interview' });
+        res.status(error.statusCode || 500).json({ error: error.message || 'Failed to start interview' });
     }
 };
 
@@ -35,6 +35,10 @@ export const answerQuestion = async (req, res) => {
     try {
         const { id } = req.params;
         const { questionId, answer } = req.body;
+
+        if (!questionId || !answer?.trim()) {
+            return res.status(400).json({ error: 'Question and answer are required' });
+        }
 
         const session = await InterviewSession.findById(id);
         if (!session) return res.status(404).json({ error: 'Session not found' });
@@ -47,35 +51,52 @@ export const answerQuestion = async (req, res) => {
         const questionObj = session.questions.find(q => q.id === questionId);
         if (!questionObj) return res.status(404).json({ error: 'Question not found' });
 
-        // Evaluate answer via Gemini
+        // Evaluate answer via Groq
         const evaluation = await evaluateAnswer(session.role, questionObj.question, answer);
 
-        // Save answer and feedback
-        session.answers.push({ questionId, answer });
-        session.feedback.push({
-            questionId,
-            score: evaluation.score || 0,
-            feedback: evaluation.feedback || 'No feedback'
-        });
+        // Save answer and feedback atomically so concurrent duplicate submits cannot both succeed.
+        const updatedSession = await InterviewSession.findOneAndUpdate(
+            {
+                _id: id,
+                userId: req.user.id,
+                'questions.id': questionId,
+                'answers.questionId': { $ne: questionId },
+            },
+            {
+                $push: {
+                    answers: { questionId, answer: answer.trim() },
+                    feedback: {
+                        questionId,
+                        score: evaluation.score || 0,
+                        feedback: evaluation.feedback || 'No feedback',
+                    },
+                },
+            },
+            { new: true }
+        );
 
-        // Recalculate total average score
-        const totalScore = session.feedback.reduce((sum, f) => sum + f.score, 0);
-        session.score = Math.round(totalScore / session.feedback.length);
+        if (!updatedSession) {
+            return res.status(400).json({ error: 'Question already answered' });
+        }
 
-        await session.save();
+        // Recalculate total average score after the atomic update.
+        const totalScore = updatedSession.feedback.reduce((sum, f) => sum + f.score, 0);
+        updatedSession.score = Math.round(totalScore / updatedSession.feedback.length);
+
+        await updatedSession.save();
 
         res.json({
             evaluation,
             sessionDetails: {
-                answersCount: session.answers.length,
-                totalQuestions: session.questions.length,
-                currentScore: session.score
+                answersCount: updatedSession.answers.length,
+                totalQuestions: updatedSession.questions.length,
+                currentScore: updatedSession.score
             }
         });
 
     } catch (error) {
         console.error('Error answering question:', error);
-        res.status(500).json({ error: 'Failed to process answer' });
+        res.status(error.statusCode || 500).json({ error: error.message || 'Failed to process answer' });
     }
 };
 

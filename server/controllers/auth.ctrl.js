@@ -1,9 +1,10 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import { getJwtSecret } from '../utils/env.js';
 
 const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET || 'supersecretjwtkey_pleasechange', {
+    return jwt.sign({ id }, getJwtSecret(), {
         expiresIn: '30d',
     });
 };

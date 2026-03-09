@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import API from '../services/api';
-import { Send, User, Bot, Loader2, CheckCircle2, ChevronRight, Play } from 'lucide-react';
+import { Send, User, Bot, Loader2, CheckCircle2, Play } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 export default function Interview() {
@@ -13,6 +13,7 @@ export default function Interview() {
     const [submitting, setSubmitting] = useState(false);
     const [chatLog, setChatLog] = useState([]); // [{ role: 'ai' | 'user', text: '', isFeedback: false }]
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+    const submitLockRef = useRef(false);
 
     useEffect(() => {
         const fetchSession = async () => {
@@ -22,7 +23,7 @@ export default function Interview() {
 
                 // Reconstruct chat log
                 const log = [];
-                data.answers.forEach((ans, i) => {
+                data.answers.forEach((ans) => {
                     const q = data.questions.find(q => q.id === ans.questionId);
                     log.push({ role: 'ai', text: q.question, isFeedback: false });
                     log.push({ role: 'user', text: ans.answer, isFeedback: false });
@@ -48,9 +49,10 @@ export default function Interview() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!answerInput.trim() || submitting || currentQuestionIndex >= session.questions.length) return;
+        if (!session || !answerInput.trim() || submitting || submitLockRef.current || currentQuestionIndex >= session.questions.length) return;
 
         const currentQ = session.questions[currentQuestionIndex];
+        submitLockRef.current = true;
         setSubmitting(true);
 
         // Optimistic UI
@@ -76,10 +78,11 @@ export default function Interview() {
 
         } catch (err) {
             console.error(err);
-            alert('Failed to submit answer');
+            alert(err.response?.data?.error || 'Failed to submit answer');
             // Rollback optimistic
             setChatLog(prev => prev.slice(0, -1));
         } finally {
+            submitLockRef.current = false;
             setSubmitting(false);
         }
     };

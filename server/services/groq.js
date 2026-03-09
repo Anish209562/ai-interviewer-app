@@ -1,4 +1,11 @@
 import Groq from "groq-sdk";
+import { getGroqApiKey } from "../utils/env.js";
+
+const createAiError = (message) => {
+  const error = new Error(message);
+  error.statusCode = 502;
+  return error;
+};
 
 const extractJson = (text) => {
   const cleaned = text.replace(/```json/gi, "").replace(/```/g, "").trim();
@@ -13,11 +20,9 @@ const extractJson = (text) => {
 };
 
 const getClient = () => {
-  const apiKey = process.env.GROQ_API_KEY;
+  const apiKey = getGroqApiKey();
 
   console.log("🔑 GROQ KEY LOADED:", apiKey ? "YES ✅" : "NO ❌");
-
-  if (!apiKey) throw new Error("GROQ_API_KEY missing in .env");
 
   return new Groq({ apiKey });
 };
@@ -49,7 +54,7 @@ Respond ONLY as JSON array like ["Q1","Q2"].`
     return extractJson(text);
   } catch (error) {
     console.error("Groq Questions Error:", error.message);
-    return ["Fallback Question 1", "Fallback Question 2"];
+    throw createAiError("Failed to generate interview questions");
   }
 };
 
@@ -71,7 +76,7 @@ Respond ONLY in JSON:
     return extractJson(text);
   } catch (error) {
     console.error("Groq Eval Error:", error.message);
-    return { score: 0, feedback: "AI failed" };
+    throw createAiError("Failed to evaluate answer");
   }
 };
 
@@ -94,9 +99,6 @@ ${resumeText}`
     return extractJson(text);
   } catch (error) {
     console.error("Groq Resume Error:", error.message);
-    return {
-      skills: ["JavaScript"],
-      gapAnalysis: "Analysis failed",
-    };
+    throw createAiError("Failed to analyze resume");
   }
 };

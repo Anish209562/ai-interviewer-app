@@ -6,20 +6,32 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js';
 import interviewRoutes from './routes/interview.js';
 import resumeRoutes from './routes/resume.js';
+import { getGroqApiKey, getJwtSecret } from './utils/env.js';
 
 dotenv.config();
 
 const app = express();
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://ai-interviewer-app-nu.vercel.app',
+  ...((process.env.CORS_ORIGINS || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)),
+];
 
 // =============================
 // ✅ Middleware
 // =============================
 app.use(
   cors({
-    origin: [
-      'http://localhost:5173',
-      'https://ai-interviewer-app-nu.vercel.app',
-    ],
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error('CORS not allowed'));
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
   })
@@ -48,15 +60,6 @@ app.get('/', (req, res) => {
 });
 
 // =============================
-// 🔑 GROQ KEY CHECK ROUTE
-// =============================
-app.get('/api/keycheck', (req, res) => {
-  res.json({
-    groqKeyLoaded: !!process.env.GROQ_API_KEY
-  });
-});
-
-// =============================
 // ✅ Database Connection
 // =============================
 const PORT = process.env.PORT || 5050;
@@ -68,8 +71,11 @@ const MONGO_URI =
 mongoose
   .connect(MONGO_URI)
   .then(() => {
+    getJwtSecret();
+    getGroqApiKey();
+
     console.log('✅ Connected to MongoDB');
-    console.log('🔑 Groq Key Loaded:', !!process.env.GROQ_API_KEY);
+    console.log('🔑 Groq Key Loaded:', true);
 
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
