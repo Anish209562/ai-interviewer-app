@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js';
 import interviewRoutes from './routes/interview.js';
 import resumeRoutes from './routes/resume.js';
+import agentRoutes from './routes/agent.js';
 import { getGroqApiKey, getJwtSecret } from './utils/env.js';
 
 dotenv.config();
@@ -44,6 +45,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/interviews', interviewRoutes);
 app.use('/api/resume', resumeRoutes);
+app.use('/api/agent', agentRoutes);
 
 // =============================
 // ✅ Health Check

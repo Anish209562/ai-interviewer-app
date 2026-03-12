@@ -82,6 +82,18 @@ export default function Dashboard() {
                     </button>
                 </div>
             </div>
+
+            <div className="mt-6 p-8 rounded-3xl bg-gradient-to-br from-indigo-600/10 to-slate-900 border border-indigo-500/20">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div>
+                        <h3 className="text-xl font-bold mb-2 text-white">Need direct interview guidance?</h3>
+                        <p className="text-slate-400 max-w-lg">Use the AI Agent for career Q&A, answer improvement, HR prep, technical prep, and role-specific coaching.</p>
+                    </div>
+                    <button onClick={() => navigate('/agent')} className="whitespace-nowrap px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors">
+                        Open AI Agent
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }

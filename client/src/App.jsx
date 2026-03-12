@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import Interview from './pages/Interview';
 import History from './pages/History';
 import ResumeAnalyzer from './pages/ResumeAnalyzer';
+import AIAgent from './pages/AIAgent';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useContext(AuthContext);
@@ -19,7 +20,7 @@ const ProtectedRoute = ({ children }) => {
 
 // Also define a Navbar here to keep things simple
 import { Link } from 'react-router-dom';
-import { Bot, LogOut, LayoutDashboard, History as HistoryIcon, FileText } from 'lucide-react';
+import { Bot, LogOut, LayoutDashboard, History as HistoryIcon, FileText, MessageSquare } from 'lucide-react';
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
@@ -37,6 +38,7 @@ const Navbar = () => {
           {user ? (
             <>
               <Link to="/dashboard" className="text-slate-300 hover:text-white transition-colors flex items-center gap-2 text-sm font-medium"><LayoutDashboard size={16} /> Dashboard</Link>
+              <Link to="/agent" className="text-slate-300 hover:text-white transition-colors flex items-center gap-2 text-sm font-medium"><MessageSquare size={16} /> AI Agent</Link>
               <Link to="/resume" className="text-slate-300 hover:text-white transition-colors flex items-center gap-2 text-sm font-medium"><FileText size={16} /> Resume</Link>
               <Link to="/history" className="text-slate-300 hover:text-white transition-colors flex items-center gap-2 text-sm font-medium"><HistoryIcon size={16} /> History</Link>
               <button
@@ -74,6 +76,10 @@ function App() {
           <Route
             path="/interview/:id"
             element={<ProtectedRoute><Interview /></ProtectedRoute>}
+          />
+          <Route
+            path="/agent"
+            element={<ProtectedRoute><AIAgent /></ProtectedRoute>}
           />
           <Route
             path="/history"
